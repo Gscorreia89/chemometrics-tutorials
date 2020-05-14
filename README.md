@@ -18,7 +18,8 @@ C. elegans nematodes. There are two main biological sources of variation in the 
 - Genotype (0: wild-type, 1: *sod-2* mutants)
 - Age/life stage (0: younger L2 worms, 1: L4 worms)
 
-Installation instructions:
+
+## Installation instructions:
 To run these tutorials, first download and install the latest Anaconda Python 3.x distribution available. 
 The following packages also need to be installed:
  - plotly: Available via conda (open an Anaconda prompt and type "conda install plotly")
