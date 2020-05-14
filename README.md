@@ -27,5 +27,5 @@ After installing plotly, either clone this repository or download as .zip file. 
 
 All other dependencies required to run the tutorials (pyChemometrics toolbox) are bundled with the repository, and no specific installation is required. 
 
-For more information on how to use Jupyter notebooks [Using the Jupyter notebook](https://docs.anaconda.com/ae-notebooks/user-guide/basic-tasks/apps/jupyter/)
+For more information on how to use Jupyter notebooks see [Using the Jupyter notebook](https://docs.anaconda.com/ae-notebooks/user-guide/basic-tasks/apps/jupyter/)
 
