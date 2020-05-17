@@ -678,7 +678,6 @@ class ChemometricsPLS(BaseEstimator, RegressorMixin, TransformerMixin):
         :return:
         :rtype:
         """
-        # TODO check with matlab and simca
         try:
             if block == 'X':
                 return np.dot(self.scores_t, np.dot(np.linalg.inv(np.dot(self.scores_t.T, self.scores_t), self.scores_t.T)))
@@ -701,10 +700,12 @@ class ChemometricsPLS(BaseEstimator, RegressorMixin, TransformerMixin):
         :return: List with row indices of X matrix
         """
         try:
+            if comps is None:
+                comps = range(self.scores_t.shape[1])
             if measure == 'T2':
                 scores = self.transform(x)
                 t2 = self.hotelling_T2(comps=comps)
-                outlier_idx = np.where(((scores ** 2) / t2 ** 2).sum(axis=1) > 1)[0]
+                outlier_idx = np.where(((scores[:, comps] ** 2) / t2 ** 2).sum(axis=1) > 1)[0]
             elif measure == 'DmodX':
                 dmodx = self.dmodx(x)
                 dcrit = st.f.ppf(1 - alpha, x.shape[1] - self.ncomps,
@@ -853,7 +854,6 @@ class ChemometricsPLS(BaseEstimator, RegressorMixin, TransformerMixin):
                 cv_betacoefs[cvround, :] = cv_pipeline.beta_coeffs.T
                 cv_vipsw[cvround, :] = cv_pipeline.VIP()
 
-            # TODO CV scores done properly
             # Align model parameters to account for sign indeterminacy.
             # The criteria here used is to select the sign that gives a more similar profile (by L1 distance) to the loadings fitted
             # on the model fitted with the whole data. Any other parameter can be used, but since the loadings in X capture
@@ -903,7 +903,6 @@ class ChemometricsPLS(BaseEstimator, RegressorMixin, TransformerMixin):
                                  'Stdev_Beta': cv_betacoefs.std(0), 'Mean_VIP': cv_vipsw.mean(0),
                                  'Stdev_VIP': cv_vipsw.std(0)}
 
-            # TODO average this properly and find a decent way to get some model uncertainty
             # Means and standard deviations...
             # self.cvParameters['Mean_Scores_t'] = cv_scores_t.mean(0)
             # self.cvParameters['Stdev_Scores_t'] = cv_scores_t.std(0)
@@ -1209,7 +1208,7 @@ class ChemometricsPLS(BaseEstimator, RegressorMixin, TransformerMixin):
         plt.xlabel("Number of components")
         plt.ylabel("R2/Q2Y")
 
-        # Specific case where n comps = 2 # TODO check if this edge case works
+        # Specific case where n comps = 2
         if q2.size == 2:
             plateau_index = np.where(np.diff(q2) / q2[0] < 0.05)[0]
             if plateau_index.size == 0:

@@ -462,10 +462,12 @@ class ChemometricsOrthogonalPLS(BaseEstimator, RegressorMixin, TransformerMixin)
         :return: List with row indices of X matrix
         """
         try:
+            if comps is None:
+                comps = range(self.t.shape[1])
             if measure == 'T2':
                 scores = self.transform(x)
                 t2 = self.hotelling_T2(comps=comps)
-                outlier_idx = np.where(((scores ** 2) / t2 ** 2).sum(axis=1) > 1)[0]
+                outlier_idx = np.where(((scores[:, comps] ** 2) / t2 ** 2).sum(axis=1) > 1)[0]
             elif measure == 'DmodX':
                 dmodx = self.dmodx(x)
                 dcrit = st.f.ppf(1 - alpha, x.shape[1] - self.ncomps,

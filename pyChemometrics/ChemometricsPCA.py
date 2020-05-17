@@ -482,6 +482,8 @@ class ChemometricsPCA(_BasePCA, BaseEstimator):
         :return: List with row indices of X matrix
         """
         try:
+            if comps is None:
+                comps = range(self.scores.shape[1])
             if measure == 'T2':
                 scores = self.transform(x)
                 t2 = self.hotelling_T2(comps=comps)
@@ -618,7 +620,7 @@ class ChemometricsPCA(_BasePCA, BaseEstimator):
         ax.set_xlabel("Number of components")
         ax.set_ylabel("R2/Q2X")
 
-        # Specific case where n comps = 2 # TODO check this edge case
+        # Specific case where n comps = 2
         if len(q2) == 2:
             plateau = np.min(np.where(np.diff(q2)/q2[0] < 0.05)[0])
         else:

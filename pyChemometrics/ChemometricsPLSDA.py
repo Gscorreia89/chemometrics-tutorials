@@ -807,7 +807,6 @@ class ChemometricsPLSDA(ChemometricsPLS, ClassifierMixin):
                         test_roc_curve.append(fpr_grid, interpolated_tpr, roc_curve[2])
                         test_auc_area.append(metrics.auc(fpr_grid, interpolated_tpr))
 
-                # TODO check the roc curve in train and test set
                 # Check the actual indexes in the original samples
                 test_misclassified_samples = test[np.where(ytest.ravel() != y_pred.ravel())[0]]
                 test_classpredictions = [*zip(test, y_pred)]
@@ -905,7 +904,6 @@ class ChemometricsPLSDA(ChemometricsPLS, ClassifierMixin):
 
             self.cvParameters['DA']['Mean_ROC'] = np.mean(np.array([x[1] for x in cv_testroc_curve]), axis=0)
             self.cvParameters['DA']['Stdev_ROC'] = np.std(np.array([x[1] for x in cv_testroc_curve]), axis=0)
-            # TODO add cv scores averaging and stdev properly
             # Means and standard deviations...
             # self.cvParameters['Mean_Scores_t'] = cv_scores_t.mean(0)
             # self.cvParameters['Stdev_Scores_t'] = cv_scores_t.std(0)
@@ -1150,7 +1148,7 @@ class ChemometricsPLSDA(ChemometricsPLS, ClassifierMixin):
         plt.xlabel("Number of components")
         plt.ylabel("R2/Q2Y/AUC")
 
-        # Specific case where n comps = 2 # TODO check if this edge case works
+        # Specific case where n comps = 2 #
         if q2.size == 2:
             plateau_index = np.where(np.diff(q2) / q2[0] < 0.05)[0]
             if plateau_index.size == 0:
