@@ -17,6 +17,8 @@ from sklearn.utils.extmath import svd_flip
 from sklearn.utils.validation import check_is_fitted, FLOAT_DTYPES
 import six
 
+__author__ = 'gscorreia89'
+
 
 def _nipals_twoblocks_inner_loop(X, Y, mode="A", max_iter=500, tol=1e-06,
                                  norm_y_weights=False):

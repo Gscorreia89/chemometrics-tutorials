@@ -1,21 +1,15 @@
 from copy import deepcopy
 import numpy as np
 import pandas as pds
-from scipy import interp
 from sklearn.base import TransformerMixin, ClassifierMixin, clone
 from ._ortho_filter_pls import OrthogonalPLSRegression
 from .ChemometricsOrthogonalPLS import ChemometricsOrthogonalPLS
 from sklearn.model_selection import BaseCrossValidator, KFold
 from sklearn.model_selection._split import BaseShuffleSplit
 from sklearn import metrics
-from .ChemometricsPLS import ChemometricsPLS
 from .ChemometricsScaler import ChemometricsScaler
-import matplotlib.pyplot as plt
-import matplotlib as mpl
-import scipy.stats as st
-import matplotlib.cm as cm
 
-__author__ = 'gd2212'
+__author__ = 'gscorreia89'
 
 
 class ChemometricsOrthogonalPLSDA(ChemometricsOrthogonalPLS, ClassifierMixin):

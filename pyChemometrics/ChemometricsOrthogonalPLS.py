@@ -6,14 +6,13 @@ from sklearn.model_selection._split import BaseShuffleSplit
 from .ChemometricsScaler import ChemometricsScaler
 from ._ortho_filter_pls import OrthogonalPLSRegression
 from matplotlib.colors import Normalize
-import scipy.stats as st
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import matplotlib as mpl
 import scipy.stats as st
 from .plotting_utils import _lineplots, _barplots
 
-__author__ = 'gd2212'
+__author__ = 'gscorreia89'
 
 
 class ChemometricsOrthogonalPLS(BaseEstimator, RegressorMixin, TransformerMixin):

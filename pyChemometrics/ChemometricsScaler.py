@@ -25,7 +25,7 @@ class ChemometricsScaler(BaseEstimator, TransformerMixin):
     Extension of Scikit-learn's StandardScaler which allows scaling by different powers of the standard deviation.
 
     :param scale_power: To which power should the standard deviation of each variable be raised for scaling.
-    0: Mean centering; 0.5: Pareto; 1:Unit Variance.
+    0: Mean centring; 0.5: Pareto; 1:Unit Variance.
     :type scale_power: Float
     :param bool copy: Copy the array containing the data.
     :param bool with_mean: Perform mean centering.

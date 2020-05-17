@@ -12,7 +12,8 @@ from matplotlib.colors import Normalize
 import matplotlib as mpl
 import scipy.stats as st
 import matplotlib.cm as cm
-__author__ = 'gd2212'
+
+__author__ = 'gscorreia89'
 
 
 class ChemometricsPCA(_BasePCA, BaseEstimator):
@@ -23,7 +24,7 @@ class ChemometricsPCA(_BasePCA, BaseEstimator):
 
     :param ncomps: Number of PCA components desired.
     :type ncomps: int
-    :param sklearn.decomposition._BasePCA pca_algorithm: scikit-learn PCA models (inheriting from _BasePCA).
+    :param sklearn.decomposition._BasePCA pca_algorithm: scikit-learn PCA algorithm to use (inheriting from _BasePCA).
     :param scaler: The object which will handle data scaling.
     :type scaler: ChemometricsScaler object, scaling/preprocessing objects from scikit-learn or None
     :param kwargs pca_type_kwargs: Keyword arguments to be passed during initialization of pca_algorithm.
@@ -38,7 +39,7 @@ class ChemometricsPCA(_BasePCA, BaseEstimator):
             # Perform the check with is instance but avoid abstract base class runs. PCA needs number of comps anyway!
             init_pca_algorithm = pca_algorithm(n_components=ncomps, **pca_type_kwargs)
             if not isinstance(init_pca_algorithm, (_BasePCA, BaseEstimator, TransformerMixin)):
-                raise TypeError("Scikit-learn model please")
+                raise TypeError("Use a valid scikit-learn PCA model please")
             if not (isinstance(scaler, TransformerMixin) or scaler is None):
                 raise TypeError("Scikit-learn Transformer-like object or None")
             if scaler is None:
