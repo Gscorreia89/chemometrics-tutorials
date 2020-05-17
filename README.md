@@ -15,8 +15,8 @@ All the data required to run these notebooks is provided on the 'data' folder. T
 
 It is a set of 139 proton high-resolution magic angle spinning NMR spectroscopy (1H HR-MAS NMR) spectra from 
 C. elegans nematodes. There are two main biological sources of variation in the dataset:
-- Genotype (0: wild-type, 1: *sod-2* mutants)
-- Age/life stage (0: younger L2 worms, 1: L4 worms)
+- Genotype (1: wild-type, 2: *sod-2* mutants)
+- Age/life stage (1: younger L2 worms, 2: L4 worms)
 
 
 ## Installation instructions:
