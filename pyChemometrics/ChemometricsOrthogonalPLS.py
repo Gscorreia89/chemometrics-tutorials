@@ -479,7 +479,7 @@ class ChemometricsOrthogonalPLS(BaseEstimator, RegressorMixin, TransformerMixin)
         except Exception as exp:
             raise exp
 
-    def plot_scores(self, orthogonal_component=1, color=None, discrete=False):
+    def plot_scores(self, orthogonal_component=1, color=None, discrete=False, label_outliers=False, plot_title=None):
         """
 
         Score plot figure wth an Hotelling T2.
@@ -489,7 +489,7 @@ class ChemometricsOrthogonalPLS(BaseEstimator, RegressorMixin, TransformerMixin)
         :return: Score plot figure
         """
         try:
-            plt.figure()
+            fig, ax = plt.subplots()
 
             orthogonal_component = np.array([orthogonal_component - 1])
 
@@ -508,44 +508,53 @@ class ChemometricsOrthogonalPLS(BaseEstimator, RegressorMixin, TransformerMixin)
                 cmap = cm.jet
                 cnorm = Normalize(vmin=min(color), vmax=max(color))
 
-                plt.scatter(score_mat[:, 0], score_mat[:, 1], c=color, cmap=cmap, norm=cnorm)
-                plt.scatter(score_mat[outlier_idx, 0], score_mat[outlier_idx, 1],
-                            c=color[outlier_idx], cmap=cmap, norm=cnorm, marker='x',
-                            s=1.5 * mpl.rcParams['lines.markersize'] ** 2)
-                plt.colorbar()
+                ax.scatter(score_mat[:, 0], score_mat[:, 1], c=color, cmap=cmap, norm=cnorm)
+                #ax.scatter(score_mat[outlier_idx, 0], score_mat[outlier_idx, 1],
+                #            c=color[outlier_idx], cmap=cmap, norm=cnorm, marker='x',
+                #            s=1.5 * mpl.rcParams['lines.markersize'] ** 2)
+                ax.colorbar()
 
             else:
                 cmap = cm.Set1
                 subtypes = np.unique(color)
                 for subtype in subtypes:
                     subset_index = np.where(color == subtype)
-                    plt.scatter(score_mat[subset_index, 0], score_mat[subset_index, 1],
+                    ax.scatter(score_mat[subset_index, 0], score_mat[subset_index, 1],
                                 c=cmap(subtype), label=subtype)
 
-                plt.legend()
-                plt.scatter(score_mat[outlier_idx, 0], score_mat[outlier_idx, 1],
-                            c=color[outlier_idx], cmap=cmap, marker='x',
-                            s=1.5 * mpl.rcParams['lines.markersize'] ** 2)
+                ax.legend()
+                #ax.scatter(score_mat[outlier_idx, 0], score_mat[outlier_idx, 1],
+                #            c=color[outlier_idx], cmap=cmap, marker='x',
+                #            s=1.5 * mpl.rcParams['lines.markersize'] ** 2)
+
+            if label_outliers:
+                for outlier in outlier_idx:
+                    ax.annotate(outlier, (score_mat[outlier, 0] + score_mat[outlier, 0]*0.05,
+                                          score_mat[outlier, 1] + score_mat[outlier, 1]*0.05))
 
             angle = np.arange(-np.pi, np.pi, 0.01)
             x = t2[0] * np.cos(angle)
             y = t2[1] * np.sin(angle)
-            plt.axhline(c='k')
-            plt.axvline(c='k')
-            plt.plot(x, y, c='k')
+            ax.axhline(c='k')
+            ax.axvline(c='k')
+            ax.plot(x, y, c='k')
 
             xmin = np.minimum(min(score_mat[:, 0]), np.min(x))
             xmax = np.maximum(max(score_mat[:, 0]), np.max(x))
             ymin = np.minimum(min(score_mat[:, 1]), np.min(y))
             ymax = np.maximum(max(score_mat[:, 1]), np.max(y))
 
-            axes = plt.gca()
-            axes.set_xlim([(xmin + (0.2 * xmin)), xmax + (0.2 * xmax)])
-            axes.set_ylim([(ymin + (0.2 * ymin)), ymax + (0.2 * ymax)])
+            #axes = plt.gca()
+            ax.set_xlim([(xmin + (0.2 * xmin)), xmax + (0.2 * xmax)])
+            ax.set_ylim([(ymin + (0.2 * ymin)), ymax + (0.2 * ymax)])
 
-            plt.title("Orthogonal PLS score plot")
-            plt.xlabel("Tpred")
-            plt.ylabel("Tortho{0}".format((orthogonal_component + 1)))
+            if plot_title is None:
+                fig.suptitle("OrthogonalPLS score plot")
+            else:
+                fig.suptitle(plot_title)
+
+            ax.set_xlabel("Tpred")
+            ax.set_ylabel("Tortho{0}".format((orthogonal_component + 1)))
             plt.show()
 
         except (ValueError, IndexError) as verr:
@@ -553,7 +562,7 @@ class ChemometricsOrthogonalPLS(BaseEstimator, RegressorMixin, TransformerMixin)
                   "exceed the number of components in the model")
             raise Exception
 
-        return None
+        return ax
 
     def plot_model_parameters(self, parameter='w_pred', orthogonal_component=1, cross_val=False, sigma=2, bar=False, xaxis=None):
 

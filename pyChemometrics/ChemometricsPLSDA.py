@@ -1214,37 +1214,37 @@ class ChemometricsPLSDA(ChemometricsPLS, ClassifierMixin):
         """
         :return: Figure with the Cross-Validated ROC curve and confidence interval
         """
-        plt.figure()
-        plt.plot(np.append(np.array([0]), self.modelParameters['DA']['ROC'][0]),
+        fig, ax = plt.subplots()
+        ax.plot(np.append(np.array([0]), self.modelParameters['DA']['ROC'][0]),
                  np.append(np.array([0]), self.cvParameters['DA']['Mean_ROC']), 'r-')
 
         upper = np.maximum(self.cvParameters['DA']['Mean_ROC'] - self.cvParameters['DA']['Stdev_ROC'], 0)
         lower = np.minimum(self.cvParameters['DA']['Mean_ROC'] + self.cvParameters['DA']['Stdev_ROC'], 1)
-        plt.fill_between(np.append(np.array([0]), self.modelParameters['DA']['ROC'][0]), np.append(np.array([0]), lower),
+        ax.fill_between(np.append(np.array([0]), self.modelParameters['DA']['ROC'][0]), np.append(np.array([0]), lower),
                          np.append(np.array([0]), upper),
                          color='grey', alpha=0.2)
 
-        plt.plot([0, 1], [0, 1], '--')
-        plt.xlim([0, 1.00])
-        plt.ylim([0, 1.05])
-        plt.xlabel("False Positive Rate (1 - Specificity)")
-        plt.ylabel("True Positive Rate (Sensitivity)")
+        ax.plot([0, 1], [0, 1], '--')
+        ax.set_xlim([0, 1.00])
+        ax.set_ylim([0, 1.05])
+        ax.set_xlabel("False Positive Rate (1 - Specificity)")
+        ax.set_ylabel("True Positive Rate (Sensitivity)")
         plt.show()
         print("Mean AUC: {0}".format(self.cvParameters['DA']['Mean_AUC']))
-        return None
+        return ax
 
     def plot_permutation_test(self, permt_res, metric='AUC'):
         try:
-            plt.figure()
-            hst = plt.hist(permt_res[0][metric], 100)
+            fig, ax = plt.subplots()
+            hst = ax.hist(permt_res[0][metric], 100)
             if metric == 'Q2Y':
-                plt.vlines(x=self.cvParameters['Q2Y'], ymin=0, ymax=max(hst[0]))
+                ax.vlines(x=self.cvParameters['Q2Y'], ymin=0, ymax=max(hst[0]))
             elif metric == 'AUC':
-                plt.vlines(x=self.cvParameters['DA']['Mean_AUC'], ymin=0, ymax=max(hst[0]))
+                ax.vlines(x=self.cvParameters['DA']['Mean_AUC'], ymin=0, ymax=max(hst[0]))
             elif metric == 'f1':
-                plt.vlines(x=self.cvParameters['DA']['Mean_f1'], ymin=0, ymax=max(hst[0]))
+                ax.vlines(x=self.cvParameters['DA']['Mean_f1'], ymin=0, ymax=max(hst[0]))
             plt.show()
-            return None
+            return ax
 
         except KeyError:
             print("Run cross-validation before calling the plotting function")

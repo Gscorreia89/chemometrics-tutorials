@@ -525,17 +525,17 @@ class ChemometricsPCA(_BasePCA, BaseEstimator):
 
             if color is None:
                 ax.scatter(x_coord, y_coord)
-                ax.scatter(x_coord[outlier_idx], y_coord[outlier_idx],
-                            marker='x', s=1.5 * mpl.rcParams['lines.markersize'] ** 2)
+                #ax.scatter(x_coord[outlier_idx], y_coord[outlier_idx],
+                #            marker='x', s=1.5 * mpl.rcParams['lines.markersize'] ** 2)
             else:
                 if discrete is False:
                     cmap = cm.jet
                     cnorm = Normalize(vmin=min(color), vmax=max(color))
 
                     ax.scatter(x_coord, y_coord, c=color, cmap=cmap, norm=cnorm)
-                    ax.scatter(x_coord[outlier_idx], y_coord[outlier_idx],
-                                c=color[outlier_idx], cmap=cmap, norm=cnorm, marker='x',
-                                s=1.5 * mpl.rcParams['lines.markersize'] ** 2)
+                    #ax.scatter(x_coord[outlier_idx], y_coord[outlier_idx],
+                    #            c=color[outlier_idx], cmap=cmap, norm=cnorm, marker='x',
+                    #            s=1.5 * mpl.rcParams['lines.markersize'] ** 2)
                     ax.colorbar()
                 else:
                     cmap = cm.Set1
@@ -545,9 +545,9 @@ class ChemometricsPCA(_BasePCA, BaseEstimator):
                         ax.scatter(x_coord[subset_index], y_coord[subset_index],
                                     c=cmap(subtype), label=subtype)
                     ax.legend()
-                    ax.scatter(x_coord[outlier_idx], y_coord[outlier_idx],
-                                c=color[outlier_idx], cmap=cmap, marker='x',
-                                s=1.5 * mpl.rcParams['lines.markersize'] ** 2)
+                    #ax.scatter(x_coord[outlier_idx], y_coord[outlier_idx],
+                    #            c=color[outlier_idx], cmap=cmap, marker='x',
+                    #            s=1.5 * mpl.rcParams['lines.markersize'] ** 2)
             if label_outliers:
                 for outlier in outlier_idx:
                     ax.annotate(outlier, (x_coord[outlier] + x_coord[outlier]*0.05, y_coord[outlier] + y_coord[outlier]*0.05))
@@ -659,7 +659,7 @@ class ChemometricsPCA(_BasePCA, BaseEstimator):
                 currmodel.cross_validation(x, cv_method=cv_method, outputdist=False)
                 q2x[ncomps - 1, rep] = currmodel.cvParameters['Q2']
 
-        plt.figure()
+        fig, ax = plt.subplots()
         ax = sns.violinplot(data=q2x.T, palette="Set1")
         ax = sns.swarmplot(data=q2x.T, edgecolor="black", color='black')
         ax.set_xticklabels(range(1, total_comps + 1))

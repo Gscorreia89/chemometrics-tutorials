@@ -1105,7 +1105,7 @@ class ChemometricsPLS(BaseEstimator, RegressorMixin, TransformerMixin):
 
         return cumulative_fit
 
-    def plot_scores(self, comps=[0, 1], color=None, discrete=False):
+    def plot_scores(self, comps=[0, 1], color=None, discrete=False, label_outliers=False, plot_title=None):
         """
 
         Score plot figure wth an Hotelling T2.
@@ -1115,10 +1115,10 @@ class ChemometricsPLS(BaseEstimator, RegressorMixin, TransformerMixin):
         :return: Score plot figure
         """
         try:
-            plt.figure()
+
+            fig, ax = plt.subplots()
 
             # Use a constant color if no color argument is passed
-
             t2 = self.hotelling_T2(alpha=0.05, comps=comps)
             outlier_idx = np.where(((self.scores_t[:, comps] ** 2) / t2 ** 2).sum(axis=1) > 1)[0]
 
@@ -1130,68 +1130,83 @@ class ChemometricsPLS(BaseEstimator, RegressorMixin, TransformerMixin):
                 y_coord = self.scores_t[:, comps[1]]
 
             if color is None:
-                plt.scatter(x_coord, y_coord)
-                plt.scatter(x_coord[outlier_idx], y_coord[outlier_idx],
-                            marker='x', s=1.5 * mpl.rcParams['lines.markersize'] ** 2)
+                ax.scatter(x_coord, y_coord)
+                #ax.scatter(x_coord[outlier_idx], y_coord[outlier_idx],
+                #            marker='x', s=1.5 * mpl.rcParams['lines.markersize'] ** 2)
             else:
                 if discrete is False:
                     cmap = cm.jet
                     cnorm = Normalize(vmin=min(color), vmax=max(color))
 
-                    plt.scatter(x_coord, y_coord, c=color, cmap=cmap, norm=cnorm)
-                    plt.scatter(x_coord[outlier_idx], y_coord[outlier_idx],
-                                c=color[outlier_idx], cmap=cmap, norm=cnorm, marker='x',
-                                s=1.5 * mpl.rcParams['lines.markersize'] ** 2)
-                    plt.colorbar()
+                    ax.scatter(x_coord, y_coord, c=color, cmap=cmap, norm=cnorm)
+                    #ax.scatter(x_coord[outlier_idx], y_coord[outlier_idx],
+                    #            c=color[outlier_idx], cmap=cmap, norm=cnorm, marker='x',
+                    #            s=1.5 * mpl.rcParams['lines.markersize'] ** 2)
+                    ax.colorbar()
                 else:
                     cmap = cm.Set1
                     subtypes = np.unique(color)
                     for subtype in subtypes:
                         subset_index = np.where(color == subtype)
-                        plt.scatter(x_coord[subset_index], y_coord[subset_index],
+                        ax.scatter(x_coord[subset_index], y_coord[subset_index],
                                     c=cmap(subtype), label=subtype)
-                    plt.legend()
-                    plt.scatter(x_coord[outlier_idx], y_coord[outlier_idx],
-                                c=color[outlier_idx], cmap=cmap, marker='x',
-                                s=1.5 * mpl.rcParams['lines.markersize'] ** 2)
+                    ax.legend()
+                    #plt.scatter(x_coord[outlier_idx], y_coord[outlier_idx],
+                    #            c=color[outlier_idx], cmap=cmap, marker='x',
+                    #            s=1.5 * mpl.rcParams['lines.markersize'] ** 2)
+            if label_outliers:
+                for outlier in outlier_idx:
+                    ax.annotate(outlier, (x_coord[outlier] + x_coord[outlier]*0.05, y_coord[outlier] + y_coord[outlier]*0.05))
+
             if len(comps) == 2:
                 angle = np.arange(-np.pi, np.pi, 0.01)
                 x = t2[0] * np.cos(angle)
                 y = t2[1] * np.sin(angle)
-                plt.axhline(c='k')
-                plt.axvline(c='k')
-                plt.plot(x, y, c='k')
+                ax.axhline(c='k')
+                ax.axvline(c='k')
+                ax.plot(x, y, c='k')
 
                 xmin = np.minimum(min(x_coord), np.min(x))
                 xmax = np.maximum(max(x_coord), np.max(x))
                 ymin = np.minimum(min(y_coord), np.min(y))
                 ymax = np.maximum(max(y_coord), np.max(y))
 
-                axes = plt.gca()
-                axes.set_xlim([(xmin + (0.2 * xmin)), xmax + (0.2 * xmax)])
-                axes.set_ylim([(ymin + (0.2 * ymin)), ymax + (0.2 * ymax)])
+                # axes = plt.gca()
+                ax.set_xlim([(xmin + (0.2 * xmin)), xmax + (0.2 * xmax)])
+                ax.set_ylim([(ymin + (0.2 * ymin)), ymax + (0.2 * ymax)])
             else:
-                plt.axhline(y=t2, c='k', ls='--')
-                plt.axhline(y=-t2, c='k', ls='--')
-                plt.legend(['Hotelling $T^{2}$ 95% limit'])
+                ax.axhline(y=t2, c='k', ls='--')
+                ax.axhline(y=-t2, c='k', ls='--')
+                ax.legend(['Hotelling $T^{2}$ 95% limit'])
 
         except (ValueError, IndexError) as verr:
             print("The number of components to plot must not exceed 2 and the component choice cannot "
                   "exceed the number of components in the model")
             raise Exception
 
-        plt.title("PLS score plot")
-        if len(comps) == 1:
-            plt.xlabel("T[{0}]".format((comps[0] + 1)))
+        if plot_title is None:
+            fig.suptitle("PLS score plot")
         else:
-            plt.xlabel("T[{0}]".format((comps[0] + 1)))
-            plt.ylabel("T[{0}]".format((comps[1] + 1)))
+            fig.suptitle(plot_title)
+
+        if len(comps) == 1:
+            ax.set_xlabel("T[{0}]".format((comps[0] + 1)))
+        else:
+            ax.set_xlabel("T[{0}]".format((comps[0] + 1)))
+            ax.set_ylabel("T[{0}]".format((comps[1] + 1)))
         plt.show()
-        return None
+        return ax
 
     def scree_plot(self, x, y, total_comps=5):
+        """
 
-        plt.figure()
+        :param x:
+        :param y:
+        :param total_comps:
+        :return:
+        """
+        fig, ax = plt.subplots()
+
         models = list()
         for ncomps in range(1, total_comps + 1):
             currmodel = deepcopy(self)
@@ -1202,11 +1217,11 @@ class ChemometricsPLS(BaseEstimator, RegressorMixin, TransformerMixin):
             q2 = np.array([x.cvParameters['PLS']['Q2Y'] for x in models])
             r2 = np.array([x.modelParameters['PLS']['R2Y'] for x in models])
 
-        plt.bar([x - 0.1 for x in range(1, total_comps + 1)], height=r2, width=0.2)
-        plt.bar([x + 0.1 for x in range(1, total_comps + 1)], height=q2, width=0.2)
-        plt.legend(['R2', 'Q2'])
-        plt.xlabel("Number of components")
-        plt.ylabel("R2/Q2Y")
+        ax.bar([x - 0.1 for x in range(1, total_comps + 1)], height=r2, width=0.2)
+        ax.bar([x + 0.1 for x in range(1, total_comps + 1)], height=q2, width=0.2)
+        ax.legend(['R2', 'Q2'])
+        ax.set_xlabel("Number of components")
+        ax.set_ylabel("R2/Q2Y")
 
         # Specific case where n comps = 2
         if q2.size == 2:
@@ -1215,7 +1230,7 @@ class ChemometricsPLS(BaseEstimator, RegressorMixin, TransformerMixin):
                 print("Consider exploring a higher level of components")
             else:
                 plateau = np.min(np.where(np.diff(q2)/q2[0] < 0.05)[0])
-                plt.vlines(x=(plateau + 1), ymin=0, ymax=1, colors='red', linestyles='dashed')
+                ax.vlines(x=(plateau + 1), ymin=0, ymax=1, colors='red', linestyles='dashed')
                 print("Q2Y measure stabilizes (increase of less than 5% of previous value or decrease) "
                       "at component {0}".format(plateau + 1))
 
@@ -1225,12 +1240,12 @@ class ChemometricsPLS(BaseEstimator, RegressorMixin, TransformerMixin):
                 print("Consider exploring a higher level of components")
             else:
                 plateau = np.min(plateau_index)
-                plt.vlines(x=(plateau + 1), ymin=0, ymax=1, colors='red', linestyles='dashed')
+                ax.vlines(x=(plateau + 1), ymin=0, ymax=1, colors='red', linestyles='dashed')
                 print("Q2Y measure stabilizes (increase of less than 5% of previous value or decrease) "
                       "at component {0}".format(plateau + 1))
 
         plt.show()
-        return None
+        return ax
 
     def repeated_cv(self, x, y, total_comps=7, repeats=15, cv_method=KFold(7, True)):
         """
@@ -1255,23 +1270,23 @@ class ChemometricsPLS(BaseEstimator, RegressorMixin, TransformerMixin):
                 currmodel.cross_validation(x, y, cv_method=cv_method, outputdist=False)
                 q2y[ncomps - 1, rep] = currmodel.cvParameters['Q2Y']
 
-        plt.figure()
-        ax = sns.violinplot(data=q2y.T, palette="Set1")
-        ax = sns.swarmplot(data=q2y.T, edgecolor="black", color='black')
+        fig, ax = plt.subplots()
+        sns.violinplot(data=q2y.T, palette="Set1", ax=ax)
+        sns.swarmplot(data=q2y.T, edgecolor="black", color='black', ax=ax)
         ax.set_xticklabels(range(1, total_comps + 1))
-        plt.xlabel("Number of components")
-        plt.ylabel("Q2Y")
+        ax.set_xlabel("Number of components")
+        ax.set_ylabel("Q2Y")
         plt.show()
 
-        return q2y
+        return q2y, ax
 
     def plot_permutation_test(self, permt_res, metric='Q2Y'):
         try:
-            plt.figure()
-            hst = plt.hist(permt_res[0][metric], 100)
+            fig, ax = plt.figure()
+            hst = ax.hist(permt_res[0][metric], 100)
             if metric == 'Q2Y':
-                plt.vlines(x=self.cvParameters['Q2Y'], ymin=0, ymax=max(hst[0]))
-            return None
+                ax.vlines(x=self.cvParameters['Q2Y'], ymin=0, ymax=max(hst[0]))
+            return ax
 
         except KeyError:
             print("Run cross-validation before calling the plotting function")
