@@ -1127,7 +1127,7 @@ class ChemometricsPLSDA(ChemometricsPLS, ClassifierMixin):
         :param total_comps:
         :return:
         """
-        plt.figure()
+        fig, ax = plt.subplots()
         models = list()
         for ncomps in range(1, total_comps + 1):
             currmodel = deepcopy(self)
@@ -1140,13 +1140,13 @@ class ChemometricsPLSDA(ChemometricsPLS, ClassifierMixin):
         r2 = np.array([x.modelParameters['R2Y'] for x in models])
         auc = np.array([x.cvParameters['DA']['Mean_AUC'][0] for x in models])
 
-        plt.bar([x - 0.2 for x in range(1, total_comps + 1)], height=r2, width=0.2)
-        plt.bar([x  for x in range(1, total_comps + 1)], height=q2, width=0.2)
-        plt.bar([x + 0.2 for x in range(1, total_comps + 1)], height=auc, width=0.2)
+        ax.bar([x - 0.2 for x in range(1, total_comps + 1)], height=r2, width=0.2)
+        ax.bar([x for x in range(1, total_comps + 1)], height=q2, width=0.2)
+        ax.bar([x + 0.2 for x in range(1, total_comps + 1)], height=auc, width=0.2)
 
-        plt.legend(['R2', 'Q2', 'Mean_AUC'])
-        plt.xlabel("Number of components")
-        plt.ylabel("R2/Q2Y/AUC")
+        ax.legend(['R2', 'Q2', 'Mean_AUC'])
+        ax.set_xlabel("Number of components")
+        ax.set_ylabel("R2/Q2Y/AUC")
 
         # Specific case where n comps = 2 #
         if q2.size == 2:
@@ -1155,7 +1155,7 @@ class ChemometricsPLSDA(ChemometricsPLS, ClassifierMixin):
                 print("Consider exploring a higher level of components")
             else:
                 plateau = np.min(np.where(np.diff(q2)/q2[0] < 0.05)[0])
-                plt.vlines(x=(plateau + 1), ymin=0, ymax=1, colors='red', linestyles='dashed')
+                ax.vlines(x=(plateau + 1), ymin=0, ymax=1, colors='red', linestyles='dashed')
                 print("Q2Y measure stabilizes (increase of less than 5% of previous value or decrease) "
                       "at component {0}".format(plateau + 1))
 
@@ -1165,13 +1165,13 @@ class ChemometricsPLSDA(ChemometricsPLS, ClassifierMixin):
                 print("Consider exploring a higher level of components")
             else:
                 plateau = np.min(plateau_index)
-                plt.vlines(x=(plateau + 1), ymin=0, ymax=1, colors='red', linestyles='dashed')
+                ax.vlines(x=(plateau + 1), ymin=0, ymax=1, colors='red', linestyles='dashed')
                 print("Q2Y measure stabilizes (increase of less than 5% of previous value or decrease) "
                       "at component {0}".format(plateau + 1))
 
         plt.show()
 
-        return None
+        return plateau + 1, ax
 
     def repeated_cv(self, x, y, total_comps=7, repeats=15, cv_method=KFold(7, True)):
         """
