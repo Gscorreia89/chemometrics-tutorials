@@ -91,8 +91,8 @@ def plot_metric_heatmap(analysis_output, which_var, metric='True Positive Rate',
         samp_size = analysis_output[which_var]['Sample Size']
         n_eff_size = len(analysis_output[which_var]['Effect Size'])
         eff_size = analysis_output[which_var]['Effect Size']
-
-    heatmap = ax.imshow(means_metric, interpolation=interpolation, cmap='jet')
+    color_norm = plt.Normalize(0, 1)
+    heatmap = ax.imshow(means_metric, interpolation=interpolation, cmap='jet', norm=color_norm)
     if contour_level is not None:
         ax.contour(means_metric, np.array([contour_level]), linewidths=1)
 
