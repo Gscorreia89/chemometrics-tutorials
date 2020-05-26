@@ -5,9 +5,8 @@ import scipy.stats as scistats
 from statsmodels.stats.multitest import multipletests
 from pyChemometrics.ChemometricsPLSDA import ChemometricsPLSDA
 
-
 from .simulateLogNormal import simulateLogNormal
-from .simulateEffect import effect_cohen_d, effect_regression_model
+from .simulateEffect import effect_cohen_d
 from .scoreResults import score_confusionmetrics, score_metrics, score_classification_metrics
 
 """
