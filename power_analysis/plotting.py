@@ -131,7 +131,7 @@ def plot_metric_spectrum(analysis_output, ref_spectrum, xvar, metric='True Posit
     fig, ax = plt.subplots()
 
     # Create a continuous norm to map from data points to colors
-    norm = plt.Normalize(metric_value.min(), metric_value.max())
+    norm = plt.Normalize(0, 1)
     lc = LineCollection(segments, cmap='jet', norm=norm)
     # Set the values used for colormapping
     lc.set_array(metric_value)
