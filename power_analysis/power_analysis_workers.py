@@ -279,5 +279,5 @@ def plsda_simulation(data, variables, effect_size, sample_size, alpha=0.05, n_re
         raise exp
 
 
-power_analysis_types = {'ANOVA': anova_oneway_simulation, 'Linear Regression': _linear_regression_simulation}
+power_analysis_types = {'ANOVA': anova_oneway_simulation, 'PLS-DA': plsda_simulation}
 
