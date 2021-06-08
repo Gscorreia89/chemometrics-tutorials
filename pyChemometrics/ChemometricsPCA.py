@@ -2,7 +2,6 @@ from copy import deepcopy
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.decomposition import PCA as skPCA
-from sklearn.decomposition.base import _BasePCA
 from sklearn.model_selection import BaseCrossValidator, KFold
 from sklearn.model_selection._split import BaseShuffleSplit
 from .ChemometricsScaler import ChemometricsScaler
@@ -15,8 +14,9 @@ import matplotlib.cm as cm
 
 __author__ = 'gscorreia89'
 
+from copy import deepcopy
 
-class ChemometricsPCA(_BasePCA, BaseEstimator):
+class ChemometricsPCA(BaseEstimator):
     """
 
     ChemometricsPCA object - Wrapper for sklearn.decomposition PCA algorithms, with tailored methods
@@ -38,7 +38,7 @@ class ChemometricsPCA(_BasePCA, BaseEstimator):
         try:
             # Perform the check with is instance but avoid abstract base class runs. PCA needs number of comps anyway!
             init_pca_algorithm = pca_algorithm(n_components=ncomps, **pca_type_kwargs)
-            if not isinstance(init_pca_algorithm, (_BasePCA, BaseEstimator, TransformerMixin)):
+            if not isinstance(init_pca_algorithm, (BaseEstimator, TransformerMixin)):
                 raise TypeError("Use a valid scikit-learn PCA model please")
             if not (isinstance(scaler, TransformerMixin) or scaler is None):
                 raise TypeError("Scikit-learn Transformer-like object or None")
@@ -355,7 +355,7 @@ class ChemometricsPCA(_BasePCA, BaseEstimator):
         """
         return np.diag(np.dot(self.scores, np.dot(np.linalg.inv(np.dot(self.scores.T, self.scores)), self.scores.T)))
 
-    def cross_validation(self, x, cv_method=KFold(7, True), outputdist=False):
+    def cross_validation(self, x, cv_method=KFold(7, shuffle=True), outputdist=False):
         """
 
         Cross-validation method for the model. Calculates cross-validated estimates for Q2X and other
@@ -591,7 +591,7 @@ class ChemometricsPCA(_BasePCA, BaseEstimator):
         plt.show()
         return ax
 
-    def scree_plot(self, x, total_comps=5, cv_method=KFold(7, True)):
+    def scree_plot(self, x, total_comps=5, cv_method=KFold(7, shuffle=True)):
         """
 
         Plot of the R2X and Q2X per number of component to aid in the selection of the component number.
@@ -636,7 +636,7 @@ class ChemometricsPCA(_BasePCA, BaseEstimator):
 
         return ax
 
-    def repeated_cv(self, x, total_comps=7, repeats=15, cv_method=KFold(7, True)):
+    def repeated_cv(self, x, total_comps=7, repeats=15, cv_method=KFold(7, shuffle=True)):
         """
 
         Perform repeated cross-validation and plot Q2X values and their distribution (violin plot) per component

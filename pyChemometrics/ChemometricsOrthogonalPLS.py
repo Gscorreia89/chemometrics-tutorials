@@ -772,7 +772,7 @@ class ChemometricsOrthogonalPLS(BaseEstimator, RegressorMixin, TransformerMixin)
         except TypeError as typerr:
             raise typerr
 
-    def cross_validation(self, x, y, cv_method=KFold(7, True), outputdist=False,
+    def cross_validation(self, x, y, cv_method=KFold(7, shuffle=True), outputdist=False,
                          **crossval_kwargs):
         """
 

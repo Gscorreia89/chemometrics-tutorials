@@ -1,6 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import plotly.graph_objs as go
+import matplotlib
+from matplotlib.colors import Normalize
+import matplotlib.cm as cm
 
 
 def manhattan_plot(pvalues, beta, sig=0.05, xvalues=None):
@@ -14,19 +17,19 @@ def manhattan_plot(pvalues, beta, sig=0.05, xvalues=None):
     """
 
     logged_p = -np.log10(pvalues)
-    plt.figure()
-    plt.title("Manhattan plot")
-    plt.ylabel(r"Sign($\beta$) $\times$ - $log_{10}$p-value")
-    plt.xlabel("$\delta$ppm")
+    fig, ax = plt.subplots()
+    ax.set_title("Manhattan plot")
+    ax.set_ylabel(r"Sign($\beta$) $\times$ - $log_{10}$p-value")
+    ax.set_xlabel("$\delta$ppm")
     if xvalues is None:
         xvalues = np.arange(pvalues.size)
-    plt.scatter(xvalues, np.sign(beta) *logged_p, s=10, c=beta)
-    plt.axhline(-np.log10(sig), linestyle='--')
-    plt.axhline(- 1*-np.log10(sig), linestyle='--')
+    ax.scatter(xvalues, np.sign(beta) *logged_p, s=10, c=beta)
+    ax.axhline(-np.log10(sig), linestyle='--')
+    ax.axhline(- 1*-np.log10(sig), linestyle='--')
 
     # plt.plot(np.mean(X, axis=0).T)
-    plt.colorbar()
-    plt.gca().invert_xaxis()
+    ax.colorbar()
+    ax.gca().invert_xaxis()
     plt.show()
 
 
@@ -118,7 +121,7 @@ def _lineplots(mean, error=None, xaxis=None):
         ax.plot(xaxis, mean)
     if error is not None:
         ax.fill_between(xaxis, mean - error, mean + error, alpha=0.2, color='red')
-
+    plt.show()
     return fig, ax
 
 
@@ -135,8 +138,49 @@ def _barplots(mean, error=None, xaxis=None):
     return fig, ax
 
 
+def _scatterplots(mean, xaxis, yaxis, colormap=plt.cm.RdYlBu_r, xlabel='Retention Time',
+                 ylabel='Mass to charge ratio (m/z)', cbarlabel='Magnitude'):
+    """
+
+    """
+
+    colormap = colormap
+    maxval = np.max([np.abs(np.max(mean)), np.abs(np.min(mean))])
+    maxcol = maxval
+    mincol = -maxval
+    new_cmap = _shiftedColorMap(colormap, start=0, midpoint=1 - maxcol/(maxcol + np.abs(mincol)), stop=1, name='new')
+
+    fig, ax = plt.subplots()
+    # To set the alpha of each point to be associated with the weight of the loading, generate an array where each row corresponds to a feature, the
+	# first three columns to the colour of the point, and the last column to the alpha value
+    # Return the colours for each feature
+    norm = Normalize(vmin=mincol, vmax=maxcol)
+    cb = cm.ScalarMappable(norm=norm, cmap=new_cmap)
+    cVectAlphas = np.zeros((mean.shape[0], 4))
+    cIX = 0
+    for c in mean:
+        cVectAlphas[cIX, :] = cb.to_rgba(mean[cIX])
+        cIX = cIX + 1
+
+    # Set the alpha (min 0.2, max 1)
+    cVectAlphas[:, 3] = (((abs(mean) - np.min(abs(mean))) * (1 - 0.2)) / (np.max(abs(mean)) - np.min(abs(mean)))) + 0.2
+    if any(cVectAlphas[:, 3] > 1):
+        cVectAlphas[cVectAlphas[:, 3] > 1, 3] = 1
+
+    # Plot
+    ax.scatter(xaxis, yaxis, color=cVectAlphas)
+    cb.set_array(mean)
+    ax.set_xlim([min(xaxis)-1, max(xaxis)+1])
+
+    cbar = plt.colorbar(cb)
+    cbar.set_label(cbarlabel)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    return fig, ax
+
+
 def _shiftedColorMap(cmap, start=0, midpoint=0.5, stop=1.0, name='shiftedcmap'):
-	'''
+    '''
 	From Paul H at Stack Overflow
 	http://stackoverflow.com/questions/7404116/defining-the-midpoint-of-a-colormap-in-matplotlib
 	Function to offset the "center" of a colormap. Useful for
@@ -159,32 +203,31 @@ def _shiftedColorMap(cmap, start=0, midpoint=0.5, stop=1.0, name='shiftedcmap'):
 		  Defaults to 1.0 (no upper ofset). Should be between
 		  `midpoint` and 1.0.
 	'''
-	cdict = {
+    cdict = {
 		'red': [],
 		'green': [],
 		'blue': [],
 		'alpha': []
 	}
 
-	# regular index to compute the colors
-	reg_index = np.linspace(start, stop, 257)
+    # regular index to compute the colors
+    reg_index = np.linspace(start, stop, 257)
 
-	# shifted index to match the data
-	shift_index = np.hstack([
-		np.linspace(0.0, midpoint, 128, endpoint=False),
-		np.linspace(midpoint, 1.0, 129, endpoint=True)
-	])
+    # shifted index to match the data
+    shift_index = np.hstack([
+    	np.linspace(0.0, midpoint, 128, endpoint=False),
+    	np.linspace(midpoint, 1.0, 129, endpoint=True)
+    ])
 
-	for ri, si in zip(reg_index, shift_index):
-		r, g, b, a = cmap(ri)
+    for ri, si in zip(reg_index, shift_index):
+        r, g, b, a = cmap(ri)
+        cdict['red'].append((si, r, r))
+        cdict['green'].append((si, g, g))
+        cdict['blue'].append((si, b, b))
+        cdict['alpha'].append((si, a, a))
 
-		cdict['red'].append((si, r, r))
-		cdict['green'].append((si, g, g))
-		cdict['blue'].append((si, b, b))
-		cdict['alpha'].append((si, a, a))
+    newcmap = matplotlib.colors.LinearSegmentedColormap(name, cdict)
+    plt.register_cmap(cmap=newcmap)
 
-	newcmap = matplotlib.colors.LinearSegmentedColormap(name, cdict)
-	plt.register_cmap(cmap=newcmap)
-
-	return newcmap
+    return newcmap
 

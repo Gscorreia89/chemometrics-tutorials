@@ -385,7 +385,7 @@ class ChemometricsOrthogonalPLSDA(ChemometricsOrthogonalPLS, ClassifierMixin):
         except TypeError as typerr:
             raise typerr
 
-    def cross_validation(self, x, y, cv_method=KFold(7, False), outputdist=False, testset_scale=False,
+    def cross_validation(self, x, y, cv_method=KFold(7, shuffle=False), outputdist=False, testset_scale=False,
                          **crossval_kwargs):
         """
 
