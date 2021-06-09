@@ -23,13 +23,13 @@ def manhattan_plot(pvalues, beta, sig=0.05, xvalues=None):
     ax.set_xlabel("$\delta$ppm")
     if xvalues is None:
         xvalues = np.arange(pvalues.size)
-    ax.scatter(xvalues, np.sign(beta) *logged_p, s=10, c=beta)
+    scatter_plot = ax.scatter(xvalues, np.sign(beta) *logged_p, s=10, c=beta)
     ax.axhline(-np.log10(sig), linestyle='--')
     ax.axhline(- 1*-np.log10(sig), linestyle='--')
 
     # plt.plot(np.mean(X, axis=0).T)
-    ax.colorbar()
-    ax.gca().invert_xaxis()
+    fig.colorbar(scatter_plot)
+    ax.invert_xaxis()
     plt.show()
 
 
