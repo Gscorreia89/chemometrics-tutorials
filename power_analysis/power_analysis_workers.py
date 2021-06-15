@@ -17,7 +17,7 @@ analysis with each specific model and scoring, for specific effect and sample si
 
 def anova_oneway_simulation(data, variables, effect_size, sample_size, alpha=0.05, n_repeats=15, weight_values=None,
                              weight_threshold=0.8, modification_type='correlation', class_balance=0.5,
-                             multiple_testing_correction='fdr_by'):
+                             multiple_testing_correction='fdr_bh'):
     """
     Worker function to perform power calculations for a one-way ANOVA model, with effect size added parametrized
     using Cohen's d measure.
@@ -65,7 +65,7 @@ def anova_oneway_simulation(data, variables, effect_size, sample_size, alpha=0.0
                     ## Select a subset of the simulated spectra
                     mod_data = np.copy(data[np.random.choice(data.shape[0], curr_ssize, replace=False), :])
                     # if any option other than proportion
-                    if modification_type is not 'proportion':
+                    if modification_type != 'proportion':
                         # Modify only variables above a certain threshold of correlation
                         var_to_mod = np.zeros(n_vars, dtype='int')
                         var_to_mod[variables] = 1
@@ -84,7 +84,7 @@ def anova_oneway_simulation(data, variables, effect_size, sample_size, alpha=0.0
                     which_samples = np.random.choice(range(curr_ssize), int(np.floor(class_balance * curr_ssize)),
                                                      replace=False)
 
-                    if modification_type is 'correlation_weighted':
+                    if modification_type == 'correlation_weighted':
                         mod_data = effect_cohen_d(mod_data, curr_effect, which_vars=var_to_mod,
                                                   which_samples=which_samples, standardized=True,
                                                   noise=0, weight=weight_values)
@@ -98,7 +98,7 @@ def anova_oneway_simulation(data, variables, effect_size, sample_size, alpha=0.0
                     pvals = scistats.f_oneway(np.delete(mod_data, which_samples, axis=0),
                                               mod_data[which_samples, :])[1]
 
-                    if modification_type is 'correlation_weighted':
+                    if modification_type == 'correlation_weighted':
                         scored_res = score_confusionmetrics(result_vector=pvals, expected_hits=expected_hits,
                                                weight_vector=weight_values,
                                                alpha=alpha)
@@ -197,7 +197,7 @@ def plsda_simulation(data, variables, effect_size, sample_size, alpha=0.05, n_re
                     test_y = np.zeros(test_x.shape[0])
                     test_y[which_samples_test] = 1
 
-                    if modification_type is not 'proportion':
+                    if modification_type != 'proportion':
                         # Modify only variables above a certain threshold of correlation
                         var_to_mod = np.zeros(n_vars, dtype='int')
                         var_to_mod[variables] = 1
@@ -213,7 +213,7 @@ def plsda_simulation(data, variables, effect_size, sample_size, alpha=0.05, n_re
                     else:
                         var_to_mod = np.random.choice(n_vars, int(np.floor(variables*n_vars)))
 
-                    if modification_type is 'correlation_weighted':
+                    if modification_type == 'correlation_weighted':
                         train_x = effect_cohen_d(train_x, curr_effect, which_vars=var_to_mod,
                                                  which_samples=which_samples_train, standardized=True,
                                                  noise=0, weight=weight_values)
