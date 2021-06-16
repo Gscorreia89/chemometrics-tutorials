@@ -17,7 +17,7 @@ analysis with each specific model and scoring, for specific effect and sample si
 
 def anova_oneway_simulation(data, variables, effect_size, sample_size, alpha=0.05, n_repeats=15, weight_values=None,
                              weight_threshold=0.8, modification_type='correlation', class_balance=0.5,
-                             multiple_testing_correction='fdr_bh'):
+                             multiple_testing_correction='fdr_by'):
     """
     Worker function to perform power calculations for a one-way ANOVA model, with effect size added parametrized
     using Cohen's d measure.
