@@ -9,7 +9,7 @@ import warnings
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
-from scipy.linalg import pinv2
+from scipy.linalg import pinv
 
 from sklearn.base import BaseEstimator, RegressorMixin, TransformerMixin
 from sklearn.utils import check_array, check_consistent_length
@@ -38,9 +38,8 @@ def _nipals_twoblocks_inner_loop(X, Y, mode="A", max_iter=500, tol=1e-06,
         # 1.1 Update u: the X weights
         if mode == "B":
             if X_pinv is None:
-                # We use slower pinv2 (same as np.linalg.pinv) for stability
                 # reasons
-                X_pinv = pinv2(X, check_finite=False)
+                X_pinv = pinv(X, check_finite=False)
             x_weights = np.dot(X_pinv, y_score)
         else:  # mode A
             # Mode A regress each X column on y_score
@@ -57,7 +56,7 @@ def _nipals_twoblocks_inner_loop(X, Y, mode="A", max_iter=500, tol=1e-06,
         # 2.1 Update y_weights
         if mode == "B":
             if Y_pinv is None:
-                Y_pinv = pinv2(Y, check_finite=False)  # compute once pinv(Y)
+                Y_pinv = pinv(Y, check_finite=False)  # compute once pinv(Y)
             y_weights = np.dot(Y_pinv, x_score)
         else:
             # Mode A regress each Y column on x_score
@@ -309,11 +308,11 @@ class _orthogonal_pls(six.with_metaclass(ABCMeta), BaseEstimator, TransformerMix
         # U = Y C(Q'C)^-1 = YC* (W* : q x k matrix)
 
         self.x_rotations_ = np.dot(w,
-            pinv2(np.dot(p.T, w),
+            pinv(np.dot(p.T, w),
                   check_finite=False))
 
         #if Y.shape[1] > 1:
-        self.y_rotations_ = np.dot(c, pinv2(np.dot(q.T, c), check_finite=False))
+        self.y_rotations_ = np.dot(c, pinv(np.dot(q.T, c), check_finite=False))
         #else:
         #    self.y_rotations_ = np.ones(1)
 
