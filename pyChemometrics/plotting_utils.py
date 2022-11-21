@@ -4,6 +4,7 @@ import plotly.graph_objs as go
 import matplotlib
 from matplotlib.colors import Normalize
 import matplotlib.cm as cm
+from matplotlib.collections import LineCollection
 
 
 def manhattan_plot(pvalues, beta, sig=0.05, xvalues=None):
@@ -152,7 +153,7 @@ def _scatterplots(mean, xaxis, yaxis, colormap=plt.cm.RdYlBu_r, xlabel='Retentio
 
     fig, ax = plt.subplots()
     # To set the alpha of each point to be associated with the weight of the loading, generate an array where each row corresponds to a feature, the
-	# first three columns to the colour of the point, and the last column to the alpha value
+    # first three columns to the colour of the point, and the last column to the alpha value
     # Return the colours for each feature
     norm = Normalize(vmin=mincol, vmax=maxcol)
     cb = cm.ScalarMappable(norm=norm, cmap=new_cmap)
@@ -179,44 +180,102 @@ def _scatterplots(mean, xaxis, yaxis, colormap=plt.cm.RdYlBu_r, xlabel='Retentio
     return fig, ax
 
 
+def plotLoadings(pcaLoadings, ppm, spectra, title='', figures=None, savePath=None, figureFormat='png', dpi=72, figureSize=(11, 7)):
+    """
+    Plot PCA loadings for each component in PCAmodel. For NMR data plots the median spectrum coloured by the loading. For MS data plots an ion map (rt vs. mz) coloured by the loading.
+    :param pcaLoadings: Loading vector
+    :param ppm: ppm vector to use in x axis
+    :param str title: Title for the plot
+    :param dict figures: If not ``None``, saves location of each figure for output in html report (see multivariateReport.py)
+    """
+
+    Xvals = ppm
+    Xlabel = chr(948)+ '1H'
+
+    Yvals = np.median(spectra, axis=0)
+    Ylabel = 'Median Intensity'
+
+    cVect = pcaLoadings
+    orig_cmap = plt.cm.RdYlBu_r # Red for high, Blue for negative, and we will have a very neutral yellow for 0
+    maxval = np.max([np.abs(np.max(cVect)), np.abs(np.min(cVect))])
+    maxcol = maxval#npy.max(cVect) # grab the maximum
+    mincol = -maxval#npy.min(cVect) # Grab the minimum
+    new_cmap = _shiftedColorMap(orig_cmap, start=0, midpoint=1 - maxcol/(maxcol + np.abs(mincol)), stop=1, name='new')
+
+    fig, ax = plt.subplots(figsize=figureSize, dpi=dpi)
+
+    ax.set_rasterized(True)
+
+    lvector = cVect
+    points = np.array([Xvals, Yvals]).transpose().reshape(-1,1,2)
+    segs = np.concatenate([points[:-1],points[1:]],axis=1)
+
+    cb = LineCollection(segs, cmap=new_cmap)
+    cb.set_array(lvector)
+    plt.gca().add_collection(cb) # add the collection to the plot
+    plt.xlim(Xvals.min()-0.4, Xvals.max() + 0.4) # line collections don't auto-scale the plot
+    plt.ylim(Yvals.min()*1.2, Yvals.max()*1.2)
+    plt.gca().invert_xaxis()
+
+    cbar = plt.colorbar(cb)
+    cbar.set_label('Loadings')
+    ax.set_xlabel(Xlabel)
+    ax.set_ylabel(Ylabel)
+
+    if savePath:
+        if figures is not None:
+            saveTemp = title + 'PCAloadings'
+            figures[saveTemp] = savePath + saveTemp + '.' + figureFormat
+        else:
+            saveTemp = ''
+            plt.savefig(savePath + saveTemp + '.' + figureFormat, bbox_inches='tight', format=figureFormat, dpi=dpi)
+            plt.close()
+
+    else:
+        plt.show()
+
+    if figures is not None:
+        return figures
+
+
 def _shiftedColorMap(cmap, start=0, midpoint=0.5, stop=1.0, name='shiftedcmap'):
     '''
-	From Paul H at Stack Overflow
-	http://stackoverflow.com/questions/7404116/defining-the-midpoint-of-a-colormap-in-matplotlib
-	Function to offset the "center" of a colormap. Useful for
-	data with a negative min and positive max and you want the
-	middle of the colormap's dynamic range to be at zero
+    From Paul H at Stack Overflow
+    http://stackoverflow.com/questions/7404116/defining-the-midpoint-of-a-colormap-in-matplotlib
+    Function to offset the "center" of a colormap. Useful for
+    data with a negative min and positive max and you want the
+    middle of the colormap's dynamic range to be at zero
 
-	Input
-	-----
-	  cmap : The matplotlib colormap to be altered
-	  start : Offset from lowest point in the colormap's range.
-		  Defaults to 0.0 (no lower ofset). Should be between
-		  0.0 and `midpoint`.
-	  midpoint : The new center of the colormap. Defaults to
-		  0.5 (no shift). Should be between 0.0 and 1.0. In
-		  general, this should be  1 - vmax/(vmax + abs(vmin))
-		  For example if your data range from -15.0 to +5.0 and
-		  you want the center of the colormap at 0.0, `midpoint`
-		  should be set to  1 - 5/(5 + 15)) or 0.75
-	  stop : Offset from highets point in the colormap's range.
-		  Defaults to 1.0 (no upper ofset). Should be between
-		  `midpoint` and 1.0.
-	'''
+    Input
+    -----
+      cmap : The matplotlib colormap to be altered
+      start : Offset from lowest point in the colormap's range.
+          Defaults to 0.0 (no lower ofset). Should be between
+          0.0 and `midpoint`.
+      midpoint : The new center of the colormap. Defaults to
+          0.5 (no shift). Should be between 0.0 and 1.0. In
+          general, this should be  1 - vmax/(vmax + abs(vmin))
+          For example if your data range from -15.0 to +5.0 and
+          you want the center of the colormap at 0.0, `midpoint`
+          should be set to  1 - 5/(5 + 15)) or 0.75
+      stop : Offset from highets point in the colormap's range.
+          Defaults to 1.0 (no upper ofset). Should be between
+          `midpoint` and 1.0.
+    '''
     cdict = {
-		'red': [],
-		'green': [],
-		'blue': [],
-		'alpha': []
-	}
+        'red': [],
+        'green': [],
+        'blue': [],
+        'alpha': []
+    }
 
     # regular index to compute the colors
     reg_index = np.linspace(start, stop, 257)
 
     # shifted index to match the data
     shift_index = np.hstack([
-    	np.linspace(0.0, midpoint, 128, endpoint=False),
-    	np.linspace(midpoint, 1.0, 129, endpoint=True)
+        np.linspace(0.0, midpoint, 128, endpoint=False),
+        np.linspace(midpoint, 1.0, 129, endpoint=True)
     ])
 
     for ri, si in zip(reg_index, shift_index):
